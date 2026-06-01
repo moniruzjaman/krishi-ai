@@ -79,7 +79,7 @@ The app **always works** — even without API keys, the rule-based tier provides
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/krishi-ai.git
+git clone https://github.com/moniruzjaman/krishi-ai.git
 cd krishi-ai
 
 # Install dependencies
