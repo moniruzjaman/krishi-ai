@@ -17,6 +17,10 @@ export interface ScanResult {
   disease: string
   treatment: string
   timestamp: number
+  cropId?: string
+  plantPart?: string
+  causalType?: string
+  diagnosisMethod?: string
 }
 
 export interface FarmerProfile {

@@ -1,56 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server'
+import {
+  matchDiseases,
+  calculateConfidence,
+  getDiseaseById,
+  getSimilarDiseases,
+  type DiseaseEntry,
+  type PlantPart,
+  type SeverityLevel,
+  type CausalType,
+  CAUSAL_TYPE_LABELS,
+} from '@/lib/disease-db'
 
-interface DiagnosisResult {
-  disease: string
-  severity: 'low' | 'medium' | 'high' | 'critical'
+// ─── TYPES ────────────────────────────────────────────────────────────────────
+
+interface DiagnosisDisease {
+  id: string
+  nameBn: string
+  nameEn: string
+  causalType: CausalType
+  causalOrganism: string
+  severity: SeverityLevel
   confidence: number
-  diagnosis: string
-  treatment: string
+  description: string
+  symptoms: string[]
+  greenList: string[]
+  yellowList: string[]
+  prevention: string[]
+  similarDiseases: Array<{ id: string; nameBn: string; nameEn: string; causalType: CausalType }>
+  spreadMethod: string
+  favorableConditions: string
+  districts: string[]
+  seasonality: string
+  affectedParts: PlantPart[]
+  isBiotic: boolean
 }
 
-const RULE_BASED_DIAGNOSES: DiagnosisResult[] = [
-  {
-    disease: 'ব্লাস্ট রোগ (Blast)',
-    severity: 'high',
-    confidence: 78,
-    diagnosis: 'পাতায় হীরাকৃতির বাদামি-ধূসর দাগ দেখা যাচ্ছে। এটি ধানের ব্লাস্ট রোগের লক্ষণ হতে পারে, যা মেঘলা আবহাওয়ায় দ্রুত ছড়ায়।',
-    treatment: '• ট্রাইসাইক্লাজোল গ্রুপের ছত্রাকনাশক স্প্রে করুন\n• আক্রান্ত পাতা অপসারণ করুন\n• অতিরিক্ত নাইট্রোজেন সার প্রয়োগ এড়িয়ে চলুন\n• প্রতিরোধী জাত ব্যবহার করুন (যেমন: ব্রি ধান-৪৯)'
-  },
-  {
-    disease: 'পারদার গাল (Bacterial Leaf Blight)',
-    severity: 'medium',
-    confidence: 72,
-    diagnosis: 'পাতার কিনারা থেকে হলদেটে-সাদা পারদার দাগ শুরু হয়েছে। এটি ব্যাকটেরিয়াল লিফ ব্লাইট হতে পারে।',
-    treatment: '• স্ট্রেপটোমাইসিন সালফেট স্প্রে করুন\n• পানি নিষ্কাশন ব্যবস্থা উন্নত করুন\n• আক্রান্ত গাছ পুড়ে ফেলুন\n• বীজতলায় বীজ শোধন করুন'
-  },
-  {
-    disease: 'বাদামি গাঁজ রোগ (Brown Spot)',
-    severity: 'low',
-    confidence: 68,
-    diagnosis: 'পাতায় ছোট ছোট বাদামি গোলাকার দাগ দেখা যাচ্ছে। এটি বাদামি গাঁজ রোগের লক্ষণ, সাধারণত পুষ্টিহীন মাটিতে বেশি হয়।',
-    treatment: '• মাটিতে পটাসিয়ামের মাত্রা বাড়ান\n• প্রোপিকোনাজোল স্প্রে করুন\n• বীজ শোধন করে বপন করুন\n• জৈব সার ব্যবহার করুন'
-  },
-  {
-    disease: 'টুংরো রোগ (Tungro)',
-    severity: 'critical',
-    confidence: 75,
-    diagnosis: 'পাতা হলদেটে-কমলা হয়ে গেছে এবং গাছ বামন আকারের হয়েছে। এটি টুংরো ভাইরাস রোগ হতে পারে, যা সবুজ পাতাফড়িং মাধ্যমে ছড়ায়।',
-    treatment: '• অবিলম্বে আক্রান্ত গাছ উঠিয়ে ধ্বংস করুন\n• সবুজ পাতাফড়িং দমনে ইমিডাক্লোপ্রিড স্প্রে করুন\n• প্রতিরোধী জাত ব্যবহার করুন\n• একই জমিতে বারবার ধান চাষ এড়িয়ে চলুন'
-  },
-  {
-    disease: 'শুষ্ক পাতা পোড়া (Leaf Scorch)',
-    severity: 'medium',
-    confidence: 70,
-    diagnosis: 'পাতার আগা থেকে শুকিয়ে বাদামি হয়ে যাচ্ছে। এটি পানির অভাব বা লবণাক্ততার কারণে হতে পারে।',
-    treatment: '• নিয়মিত সেচ নিশ্চিত করুন\n• মাটির লবণাক্ততা পরীক্ষা করুন\n• জৈব সার দিয়ে মাটির গুণমান উন্নত করুন\n• ছায়াযুক্ত জায়গায় চারা রাখুন'
-  }
-]
+interface DiagnosisResponse {
+  matchedDiseases: DiagnosisDisease[]
+  totalMatches: number
+  diagnosisMethod: 'symptom_matching' | 'ai_vision' | 'combined'
+  cropId: string
+  plantPart: PlantPart
+  symptomId: string
+  advisoryNote: string
+}
 
-async function callGeminiVision(imageBase64: string, mimeType: string): Promise<DiagnosisResult | null> {
+// ─── AI VISION ANALYSIS ──────────────────────────────────────────────────────
+
+async function callGeminiVision(
+  imageBase64: string,
+  mimeType: string,
+  cropId: string,
+  plantPart: string,
+  symptomDesc: string
+): Promise<Partial<DiagnosisDisease>[] | null> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return null
 
   try {
+    const prompt = `তুমি একজন কৃষি রোগ বিশেষজ্ঞ। এই ছবিটি বিশ্লেষণ করো এবং গাছের রোগ নির্ণয় করো।
+
+ফসল: ${cropId}
+আক্রান্ত অংশ: ${plantPart}
+লক্ষণ: ${symptomDesc}
+
+JSON অ্যারে ফরম্যাটে উত্তর দাও (সর্বোচ্চ ৩টি সম্ভাব্য রোগ):
+[{
+  "nameBn": "রোগের নাম বাংলায়",
+  "nameEn": "Disease name in English",
+  "causalType": "fungus/bacteria/virus/pest/nematode/abiotic",
+  "severity": "low/medium/high/critical",
+  "confidence": 0-100,
+  "description": "বিস্তারিত বর্ণনা বাংলায়",
+  "symptoms": ["লক্ষণ ১", "লক্ষণ ২"],
+  "greenList": ["জৈব নিয়ন্ত্রণ ১", "জৈব নিয়ন্ত্রণ ২"],
+  "yellowList": ["রাসায়নিক নিয়ন্ত্রণ ১"],
+  "prevention": ["প্রতিরোধ ১"],
+  "spreadMethod": "ছড়ানোর পদ্ধতি",
+  "favorableConditions": "অনুকূল পরিবেশ"
+}]`
+
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
@@ -59,20 +88,20 @@ async function callGeminiVision(imageBase64: string, mimeType: string): Promise<
         body: JSON.stringify({
           contents: [{
             parts: [
-              { text: 'এই ছবিটি বিশ্লেষণ করো এবং গাছের রোগ নির্ণয় করো। JSON ফরম্যাটে উত্তর দাও: {"disease":"রোগের নাম","severity":"low/medium/high/critical","confidence":0-100,"diagnosis":"বিস্তারিত বর্ণনা বাংলায়","treatment":"চিকিৎসা বাংলায়"}' },
+              { text: prompt },
               {
                 inline_data: {
                   mime_type: mimeType,
-                  data: imageBase64
-                }
-              }
-            ]
+                  data: imageBase64,
+                },
+              },
+            ],
           }],
           generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 1024,
-          }
-        })
+            temperature: 0.3,
+            maxOutputTokens: 2048,
+          },
+        }),
       }
     )
 
@@ -81,50 +110,251 @@ async function callGeminiVision(imageBase64: string, mimeType: string): Promise<
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
     if (!text) return null
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
     if (!jsonMatch) return null
 
     const parsed = JSON.parse(jsonMatch[0])
-    return {
-      disease: parsed.disease || 'অজানা রোগ',
-      severity: ['low', 'medium', 'high', 'critical'].includes(parsed.severity) ? parsed.severity : 'medium',
-      confidence: Math.min(100, Math.max(0, Number(parsed.confidence) || 70)),
-      diagnosis: parsed.diagnosis || 'রোগ নির্ণয় করা যায়নি',
-      treatment: parsed.treatment || 'কৃষি অফিসারের পরামর্শ নিন',
-    }
+    if (!Array.isArray(parsed)) return null
+
+    return parsed.map((p: Record<string, unknown>) => ({
+      id: `ai_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      nameBn: (p.nameBn as string) || 'অজানা রোগ',
+      nameEn: (p.nameEn as string) || 'Unknown Disease',
+      causalType: (['fungus', 'bacteria', 'virus', 'pest', 'nematode', 'abiotic'].includes(p.causalType as string)
+        ? p.causalType : 'fungus') as CausalType,
+      severity: (['low', 'medium', 'high', 'critical'].includes(p.severity as string)
+        ? p.severity : 'medium') as SeverityLevel,
+      confidence: Math.min(100, Math.max(0, Number(p.confidence) || 65)),
+      description: (p.description as string) || 'রোগ নির্ণয় করা যায়নি',
+      symptoms: Array.isArray(p.symptoms) ? p.symptoms as string[] : [],
+      greenList: Array.isArray(p.greenList) ? p.greenList as string[] : [],
+      yellowList: Array.isArray(p.yellowList) ? p.yellowList as string[] : [],
+      prevention: Array.isArray(p.prevention) ? p.prevention as string[] : [],
+      spreadMethod: (p.spreadMethod as string) || '',
+      favorableConditions: (p.favorableConditions as string) || '',
+    }))
   } catch {
     return null
   }
 }
 
+// ─── HELPER: Convert DiseaseEntry to DiagnosisDisease ────────────────────────
+
+function toDiagnosisDisease(entry: DiseaseEntry, confidence: number): DiagnosisDisease {
+  const similar = getSimilarDiseases(entry.id)
+  return {
+    id: entry.id,
+    nameBn: entry.nameBn,
+    nameEn: entry.nameEn,
+    causalType: entry.causalType,
+    causalOrganism: entry.causalOrganism,
+    severity: entry.severity,
+    confidence,
+    description: entry.description,
+    symptoms: entry.symptoms,
+    greenList: entry.greenList,
+    yellowList: entry.yellowList,
+    prevention: entry.prevention,
+    similarDiseases: similar.map(s => ({
+      id: s.id,
+      nameBn: s.nameBn,
+      nameEn: s.nameEn,
+      causalType: s.causalType,
+    })),
+    spreadMethod: entry.spreadMethod,
+    favorableConditions: entry.favorableConditions,
+    districts: entry.districts,
+    seasonality: entry.seasonality,
+    affectedParts: entry.affectedParts,
+    isBiotic: entry.causalType !== 'abiotic',
+  }
+}
+
+// ─── MAIN POST HANDLER ──────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   try {
-    const { image, mimeType } = await req.json()
+    const body = await req.json()
+    const {
+      cropId = '',
+      plantPart = 'leaf' as PlantPart,
+      symptomId = 'not_sure',
+      image,
+      mimeType,
+    } = body
 
-    if (!image || !mimeType) {
-      return NextResponse.json({ error: 'Image is required' }, { status: 400 })
+    // ─── Step 1: Symptom-based matching from local database (CABI-style) ──
+    const matched = matchDiseases(cropId, plantPart as PlantPart, symptomId)
+    const localResults: DiagnosisDisease[] = matched.map(d =>
+      toDiagnosisDisease(d, calculateConfidence(d, cropId, plantPart as PlantPart, symptomId))
+    )
+
+    // ─── Step 2: AI Vision analysis (if image provided) ──────────────────
+    let aiResults: Partial<DiagnosisDisease>[] | null = null
+    if (image && mimeType) {
+      aiResults = await callGeminiVision(
+        image,
+        mimeType,
+        cropId,
+        plantPart,
+        symptomId
+      )
     }
 
-    // Try Gemini Vision first
-    const geminiResult = await callGeminiVision(image, mimeType)
-    if (geminiResult) {
-      return NextResponse.json({ ...geminiResult, source: 'gemini' })
+    // ─── Step 3: Combine results ─────────────────────────────────────────
+    let finalResults: DiagnosisDisease[]
+    let diagnosisMethod: DiagnosisResponse['diagnosisMethod']
+
+    if (aiResults && aiResults.length > 0) {
+      // Merge AI results with local results
+      const aiConverted: DiagnosisDisease[] = aiResults.map(ar => ({
+        id: ar.id || `ai_${Date.now()}`,
+        nameBn: ar.nameBn || 'অজানা রোগ',
+        nameEn: ar.nameEn || 'Unknown Disease',
+        causalType: ar.causalType || 'fungus',
+        causalOrganism: ar.causalOrganism || '',
+        severity: ar.severity || 'medium',
+        confidence: ar.confidence || 65,
+        description: ar.description || '',
+        symptoms: ar.symptoms || [],
+        greenList: ar.greenList || [],
+        yellowList: ar.yellowList || [],
+        prevention: ar.prevention || [],
+        similarDiseases: ar.similarDiseases || [],
+        spreadMethod: ar.spreadMethod || '',
+        favorableConditions: ar.favorableConditions || '',
+        districts: ar.districts || [],
+        seasonality: ar.seasonality || '',
+        affectedParts: ar.affectedParts || [plantPart as PlantPart],
+        isBiotic: ar.causalType !== 'abiotic',
+      }))
+
+      // Deduplicate: if AI result matches a local result by name, prefer local (more complete data)
+      const localNames = new Set(localResults.map(r => r.nameBn))
+      const uniqueAiResults = aiConverted.filter(r => !localNames.has(r.nameBn))
+
+      // Boost confidence for results that appear in both AI and local
+      const boostedLocal = localResults.map(r => ({
+        ...r,
+        confidence: Math.min(100, r.confidence + 10), // Boost for dual confirmation
+      }))
+
+      finalResults = [...boostedLocal, ...uniqueAiResults].sort(
+        (a, b) => b.confidence - a.confidence
+      )
+      diagnosisMethod = 'combined'
+    } else if (localResults.length > 0) {
+      finalResults = localResults
+      diagnosisMethod = 'symptom_matching'
+    } else {
+      // No matches found - return generic advisory
+      finalResults = [{
+        id: 'no_match',
+        nameBn: 'রোগ নির্ণয় অনিশ্চিত',
+        nameEn: 'Diagnosis Uncertain',
+        causalType: 'abiotic',
+        causalOrganism: 'নির্ধারণ করা যায়নি',
+        severity: 'medium',
+        confidence: 30,
+        description: 'আপনার উল্লেখিত লক্ষণের সাথে কোনো নির্দিষ্ট রোগের মিল পাওয়া যায়নি। অনুগ্রহ করে আরও বিস্তারিত লক্ষণ দেখান অথবা নিকটতম কৃষি অফিসে যোগাযোগ করুন।',
+        symptoms: [],
+        greenList: [
+          'নিকটতম কৃষি সম্প্রসারণ অফিসে যোগাযোগ করুন',
+          'আক্রান্ত গাছের ছবি তুলে সংরক্ষণ করুন',
+          'লক্ষণগুলো নথিবদ্ধ করুন',
+        ],
+        yellowList: [],
+        prevention: [
+          'নিয়মিত ফসল পরিদর্শন করুন',
+          'সুস্থ বীজ ব্যবহার করুন',
+          'সুষম সার প্রয়োগ করুন',
+        ],
+        similarDiseases: [],
+        spreadMethod: 'অজানা',
+        favorableConditions: 'অজানা',
+        districts: [],
+        seasonality: '',
+        affectedParts: [plantPart as PlantPart],
+        isBiotic: true,
+      }]
+      diagnosisMethod = 'symptom_matching'
     }
 
-    // Fallback: rule-based diagnosis
-    const randomIndex = Math.floor(Math.random() * RULE_BASED_DIAGNOSES.length)
-    const result = RULE_BASED_DIAGNOSES[randomIndex]
-    return NextResponse.json({ ...result, source: 'rules' })
+    // ─── Step 4: Generate advisory note ──────────────────────────────────
+    const advisoryNote = generateAdvisory(cropId, plantPart, symptomId, finalResults)
+
+    // ─── Step 5: Build response ──────────────────────────────────────────
+    const response: DiagnosisResponse = {
+      matchedDiseases: finalResults.slice(0, 5), // Top 5 matches
+      totalMatches: finalResults.length,
+      diagnosisMethod,
+      cropId,
+      plantPart: plantPart as PlantPart,
+      symptomId,
+      advisoryNote,
+    }
+
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('Analyze API error:', error)
     return NextResponse.json({
-      disease: 'বিশ্লেষণ ত্রুটি',
-      severity: 'medium' as const,
-      confidence: 50,
-      diagnosis: 'ছবি বিশ্লেষণে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন অথবা নিকটতম কৃষি অফিসে যোগাযোগ করুন।',
-      treatment: '• স্থানীয় কৃষি অফিসারের পরামর্শ নিন\n• আক্রান্ত অংশ ছবি তুলে সংরক্ষণ করুন\n• অন্য কৃষকদের সাথে আলোচনা করুন',
-      source: 'rules'
-    })
+      matchedDiseases: [{
+        id: 'error',
+        nameBn: 'বিশ্লেষণ ত্রুটি',
+        nameEn: 'Analysis Error',
+        causalType: 'abiotic' as CausalType,
+        causalOrganism: '',
+        severity: 'medium' as SeverityLevel,
+        confidence: 50,
+        description: 'ছবি বিশ্লেষণে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন অথবা নিকটতম কৃষি অফিসে যোগাযোগ করুন।',
+        symptoms: [],
+        greenList: ['নিকটতম কৃষি অফিসারের পরামর্শ নিন'],
+        yellowList: [],
+        prevention: ['কৃষি অফিসারের সাথে পরামর্শ করুন'],
+        similarDiseases: [],
+        spreadMethod: '',
+        favorableConditions: '',
+        districts: [],
+        seasonality: '',
+        affectedParts: ['leaf' as PlantPart],
+        isBiotic: true,
+      }],
+      totalMatches: 1,
+      diagnosisMethod: 'symptom_matching',
+      cropId: '',
+      plantPart: 'leaf' as PlantPart,
+      symptomId: 'not_sure',
+      advisoryNote: 'বিশ্লেষণে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+    }, { status: 500 })
   }
+}
+
+// ─── ADVISORY NOTE GENERATOR ────────────────────────────────────────────────
+
+function generateAdvisory(
+  cropId: string,
+  plantPart: string,
+  symptomId: string,
+  results: DiagnosisDisease[]
+): string {
+  const hasCritical = results.some(r => r.severity === 'critical')
+  const hasHigh = results.some(r => r.severity === 'high')
+  const isAbiotic = results.some(r => !r.isBiotic)
+
+  let note = ''
+
+  if (hasCritical) {
+    note = '⚠️ সংকটাপন্ন রোগ শনাক্ত হয়েছে! অবিলম্বে ব্যবস্থা নিন। স্থানীয় কৃষি অফিসারের পরামর্শ নিন এবং আক্রান্ত গাছ অপসারণ করুন।'
+  } else if (hasHigh) {
+    note = '🟠 মারাত্মক রোগ শনাক্ত হয়েছে। দ্রুত ব্যবস্থা নিলে ফসল রক্ষা করা সম্ভব। সবুজ তালিকার (Green List) পদ্ধতি আগে চেষ্টা করুন।'
+  } else if (isAbiotic) {
+    note = '🔵 এটি পরিবেশগত/পুষ্টিজনিত সমস্যা হতে পারে (জীবাণু জড়িত নয়)। মাটি পরীক্ষা ও সেচ ব্যবস্থা উন্নত করুন।'
+  } else {
+    note = '🟢 হালকা থেকে মাঝারি মাত্রার সমস্যা। সবুজ তালিকার (Green List) জৈব পদ্ধতি দিয়ে শুরু করুন। প্রয়োজনে হলুদ তালিকার (Yellow List) রাসায়নিক ব্যবস্থা নিন।'
+  }
+
+  note += ' CABI Plantwise পদ্ধতি অনুসারে, সবুজ তালিকা (জৈব/প্রতিরোধমূলক) পদ্ধতি সর্বদা আগে চেষ্টা করুন, হলুদ তালিকা (রাসায়নিক) শেষ উপায় হিসেবে ব্যবহার করুন।'
+
+  return note
 }
