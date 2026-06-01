@@ -50,3 +50,14 @@ Caddyfile
 # local tools
 /.local/
 .github/workflows/
+
+# Sandbox / development artifacts (not for production)
+.zscripts/
+Caddyfile
+examples/
+mini-services/
+skills/
+worklog.md
+db/
+download/
+.env
