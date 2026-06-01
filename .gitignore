@@ -46,3 +46,6 @@ Caddyfile
 
 # examples (not part of the app)
 /examples/
+
+# local tools
+/.local/
