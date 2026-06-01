@@ -49,3 +49,4 @@ Caddyfile
 
 # local tools
 /.local/
+.github/workflows/
