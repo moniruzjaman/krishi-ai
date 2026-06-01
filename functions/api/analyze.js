@@ -147,36 +147,49 @@ export async function onRequestPost(context) {
     }));
 
     // Step 2: Try Gemini Vision (if image provided and API key available)
+    // Model cascade: gemini-2.5-flash → gemini-2.5-flash-preview-05-20 → gemini-2.0-flash
     let aiResults = null;
+    let aiModel = '';
     if (image && mimeType) {
       const apiKey = context.env?.GEMINI_API_KEY;
       if (apiKey) {
-        try {
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: `তুমি একজন কৃষি রোগ বিশেষজ্ঞ। এই ছবিটি বিশ্লেষণ করো। ফসল: ${cropId}, অংশ: ${plantPart}। JSON অ্যারে ফরম্যাটে ৩টি সম্ভাব্য রোগ: [{"nameBn":"নাম","nameEn":"Name","causalType":"fungus","severity":"medium","confidence":75,"description":"বর্ণনা","greenList":["জৈব"],"yellowList":["রাসায়নিক"],"prevention":["প্রতিরোধ"],"spreadMethod":"ছড়ানো","favorableConditions":"পরিবেশ"}]` },
-                    { inline_data: { mime_type: mimeType, data: image } }
-                  ]
-                }],
-                generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-              })
+        const VISION_MODELS = [
+          'gemini-2.5-flash',
+          'gemini-2.5-flash-preview-05-20',
+          'gemini-2.0-flash',
+        ];
+        for (const model of VISION_MODELS) {
+          try {
+            const res = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{
+                    parts: [
+                      { text: `তুমি একজন কৃষি রোগ বিশেষজ্ঞ। এই ছবিটি বিশ্লেষণ করো। ফসল: ${cropId}, অংশ: ${plantPart}। JSON অ্যারে ফরম্যাটে ৩টি সম্ভাব্য রোগ: [{"nameBn":"নাম","nameEn":"Name","causalType":"fungus","severity":"medium","confidence":75,"description":"বর্ণনা","greenList":["জৈব"],"yellowList":["রাসায়নিক"],"prevention":["প্রতিরোধ"],"spreadMethod":"ছড়ানো","favorableConditions":"পরিবেশ"}]` },
+                      { inline_data: { mime_type: mimeType, data: image } }
+                    ]
+                  }],
+                  generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+                })
+              }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                const match = text.match(/\[[\s\S]*\]/);
+                if (match) {
+                  aiResults = JSON.parse(match[0]);
+                  aiModel = model;
+                  break;
+                }
+              }
             }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              const match = text.match(/\[[\s\S]*\]/);
-              if (match) aiResults = JSON.parse(match[0]);
-            }
-          }
-        } catch {}
+          } catch { continue; }
+        }
       }
     }
 

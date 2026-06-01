@@ -475,7 +475,7 @@ export default function AnalyzerTab() {
                     <X className="w-3.5 h-3.5" />
                   </button>
                   <Badge className="absolute bottom-2 left-2 bg-krishi-green/90 text-white border-0 text-[10px]">
-                    <CheckCircle className="w-3 h-3 mr-1" /> AI বিশ্লেষণ সক্রিয়
+                    <CheckCircle className="w-3 h-3 mr-1" /> Gemini 2.5 Vision
                   </Badge>
                 </div>
               </div>
@@ -525,11 +525,11 @@ export default function AnalyzerTab() {
               </div>
               <div className="text-center space-y-1">
                 <h3 className="text-lg font-bold text-foreground">CABI পদ্ধতিতে বিশ্লেষণ হচ্ছে</h3>
-                <p className="text-xs text-muted-foreground">লক্ষণ মিলানো + AI ভিশন বিশ্লেষণ</p>
+                <p className="text-xs text-muted-foreground">লক্ষণ মিলানো + Gemini 2.5 Vision বিশ্লেষণ</p>
               </div>
 
               <div className="w-full max-w-xs space-y-2">
-                {['ফসল ও লক্ষণ মিলানো হচ্ছে', 'রোগ ডাটাবেজ অনুসন্ধান', 'AI ভিশন বিশ্লেষণ', 'ফলাফল প্রস্তুত করা হচ্ছে'].map((text, i) => (
+                {['ফসল ও লক্ষণ মিলানো হচ্ছে', 'রোগ ডাটাবেজ অনুসন্ধান', 'Gemini 2.5 Vision বিশ্লেষণ', 'ফলাফল প্রস্তুত করা হচ্ছে'].map((text, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <div className="w-4 h-4 rounded-full border-2 border-krishi-green/30 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-krishi-green animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
@@ -560,8 +560,8 @@ export default function AnalyzerTab() {
             {/* Method Badge */}
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-krishi-green/10 text-krishi-green border-0 text-[10px]">
-                {diagnosisResult.diagnosisMethod === 'combined' ? '🤖 AI + 📋 লক্ষণ মিল' :
-                 diagnosisResult.diagnosisMethod === 'ai_vision' ? '🤖 AI ভিশন' :
+                {diagnosisResult.diagnosisMethod === 'combined' ? '🤖 Gemini 2.5 + 📋 লক্ষণ মিল' :
+                 diagnosisResult.diagnosisMethod === 'ai_vision' ? '🤖 Gemini 2.5 Flash Vision' :
                  '📋 লক্ষণ ভিত্তিক'}
               </Badge>
               <Badge className="bg-krishi-sky/10 text-krishi-sky border-0 text-[10px]">

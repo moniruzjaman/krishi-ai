@@ -14,7 +14,7 @@ const CATEGORY_CHIPS = [
 ]
 
 const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
-  gemini: { label: 'Gemini', color: 'bg-blue-100 text-blue-700' },
+  gemini: { label: 'Gemini 2.5 Flash', color: 'bg-blue-100 text-blue-700' },
   openrouter: { label: 'OpenRouter', color: 'bg-purple-100 text-purple-700' },
   rules: { label: 'Rule-based', color: 'bg-amber-100 text-amber-700' },
 }

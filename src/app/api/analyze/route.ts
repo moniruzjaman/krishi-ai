@@ -10,6 +10,7 @@ import {
   type CausalType,
   CAUSAL_TYPE_LABELS,
 } from '@/lib/disease-db'
+import { callGeminiVision, getActiveModelLabel } from '@/lib/gemini'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -47,15 +48,15 @@ interface DiagnosisResponse {
 
 // ─── AI VISION ANALYSIS ──────────────────────────────────────────────────────
 
-async function callGeminiVision(
+async function callAIVision(
   imageBase64: string,
   mimeType: string,
   cropId: string,
   plantPart: string,
   symptomDesc: string
-): Promise<Partial<DiagnosisDisease>[] | null> {
+): Promise<{ diseases: Partial<DiagnosisDisease>[] | null; model: string }> {
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return null
+  if (!apiKey) return { diseases: null, model: '' }
 
   try {
     const prompt = `তুমি একজন কৃষি রোগ বিশেষজ্ঞ। এই ছবিটি বিশ্লেষণ করো এবং গাছের রোগ নির্ণয় করো।
@@ -80,43 +81,22 @@ JSON অ্যারে ফরম্যাটে উত্তর দাও (স�
   "favorableConditions": "অনুকূল পরিবেশ"
 }]`
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: imageBase64,
-                },
-              },
-            ],
-          }],
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 2048,
-          },
-        }),
-      }
+    const result = await callGeminiVision(
+      apiKey,
+      { mimeType, data: imageBase64 },
+      prompt,
+      { temperature: 0.3, maxOutputTokens: 2048 }
     )
 
-    if (!res.ok) return null
-    const data = await res.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return null
+    if (!result) return { diseases: null, model: '' }
 
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) return null
+    const jsonMatch = result.text.match(/\[[\s\S]*\]/)
+    if (!jsonMatch) return { diseases: null, model: result.model }
 
     const parsed = JSON.parse(jsonMatch[0])
-    if (!Array.isArray(parsed)) return null
+    if (!Array.isArray(parsed)) return { diseases: null, model: result.model }
 
-    return parsed.map((p: Record<string, unknown>) => ({
+    const diseases = parsed.map((p: Record<string, unknown>) => ({
       id: `ai_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       nameBn: (p.nameBn as string) || 'অজানা রোগ',
       nameEn: (p.nameEn as string) || 'Unknown Disease',
@@ -133,8 +113,10 @@ JSON অ্যারে ফরম্যাটে উত্তর দাও (স�
       spreadMethod: (p.spreadMethod as string) || '',
       favorableConditions: (p.favorableConditions as string) || '',
     }))
+
+    return { diseases, model: result.model }
   } catch {
-    return null
+    return { diseases: null, model: '' }
   }
 }
 
@@ -191,14 +173,17 @@ export async function POST(req: NextRequest) {
 
     // ─── Step 2: AI Vision analysis (if image provided) ──────────────────
     let aiResults: Partial<DiagnosisDisease>[] | null = null
+    let aiModel = ''
     if (image && mimeType) {
-      aiResults = await callGeminiVision(
+      const visionResult = await callAIVision(
         image,
         mimeType,
         cropId,
         plantPart,
         symptomId
       )
+      aiResults = visionResult.diseases
+      aiModel = visionResult.model
     }
 
     // ─── Step 3: Combine results ─────────────────────────────────────────

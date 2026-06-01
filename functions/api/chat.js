@@ -25,28 +25,35 @@ export async function onRequestPost(context) {
     const { message } = await context.request.json();
     if (!message) return new Response(JSON.stringify({ error: 'Message required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 
-    // Try Gemini
+    // Try Gemini — Model cascade: gemini-2.5-flash → gemini-2.5-flash-preview-05-20 → gemini-2.0-flash
     const apiKey = context.env?.GEMINI_API_KEY;
     if (apiKey) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: message }] }],
-              systemInstruction: { parts: [{ text: 'তুমি কৃষি এআই — বাংলাদেশের কৃষকদের জন্য কৃষি সহায়ক। সব উত্তর বাংলায় দাও।' }] },
-              generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-            })
+      const TEXT_MODELS = [
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-preview-05-20',
+        'gemini-2.0-flash',
+      ];
+      for (const model of TEXT_MODELS) {
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: message }] }],
+                systemInstruction: { parts: [{ text: 'তুমি কৃষি এআই — বাংলাদেশের কৃষকদের জন্য কৃষি সহায়ক। সব উত্তর বাংলায় দাও।' }] },
+                generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+              })
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return new Response(JSON.stringify({ response: text, source: 'gemini', model }), { headers: { 'Content-Type': 'application/json' } });
           }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return new Response(JSON.stringify({ response: text, source: 'gemini' }), { headers: { 'Content-Type': 'application/json' } });
-        }
-      } catch {}
+        } catch { continue; }
+      }
     }
 
     // Rule-based fallback

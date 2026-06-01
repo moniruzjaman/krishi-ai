@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { callGeminiChat, getActiveModelLabel } from '@/lib/gemini'
 
 const BENGALI_RULES: Record<string, string> = {
   'ধান': 'ধান চাষের জন্য মাটির pH ৫.৫-৬.৫ হওয়া উচিত। সঠিক সময়ে সার প্রয়োগ করুন এবং পানি নিষ্কাশন নিশ্চিত করুন। বোরো মৌসুমে উন্নত জাত ব্যবহার করুন।',
@@ -30,37 +31,24 @@ function getRuleBasedResponse(message: string): string {
   return response
 }
 
-async function callGemini(messages: {role: string; content: string}[]): Promise<string | null> {
+async function callGemini(messages: {role: string; content: string}[]): Promise<{ text: string; model: string } | null> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return null
 
   try {
-    const contents = messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
+    const geminiMessages = messages.map(m => ({
+      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+      content: m.content,
     }))
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: {
-            parts: [{ text: 'তুমি কৃষি এআই (Krishi AI) — বাংলাদেশের কৃষকদের জন্য একটি কৃষি সহায়ক। সব উত্তর বাংলায় দাও। কৃষি, ফসল, আবহাওয়া, বাজার মূল্য, রোগ নির্ণয় সম্পর্কে বিস্তারিত ও ব্যবহারিক পরামর্শ দাও। সহজ ভাষায় কথা বলো।' }]
-          },
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 1024,
-          }
-        })
-      }
+    const result = await callGeminiChat(
+      apiKey,
+      geminiMessages,
+      'তুমি কৃষি এআই (Krishi AI) — বাংলাদেশের কৃষকদের জন্য একটি কৃষি সহায়ক। সব উত্তর বাংলায় দাও। কৃষি, ফসল, আবহাওয়া, বাজার মূল্য, রোগ নির্ণয় সম্পর্কে বিস্তারিত ও ব্যবহারিক পরামর্শ দাও। সহজ ভাষায় কথা বলো।',
+      { temperature: 0.7, maxOutputTokens: 1024 }
     )
 
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || null
+    return result
   } catch {
     return null
   }
@@ -123,10 +111,10 @@ export async function POST(req: NextRequest) {
       { role: 'user', content: message }
     ]
 
-    // Tier 1: Gemini 2.0 Flash
+    // Tier 1: Gemini 2.5 Flash → 2.0 Flash (cascade)
     const geminiResponse = await callGemini(messages)
     if (geminiResponse) {
-      return NextResponse.json({ response: geminiResponse, source: 'gemini' })
+      return NextResponse.json({ response: geminiResponse.text, source: 'gemini', model: geminiResponse.model })
     }
 
     // Tier 2: OpenRouter Free
