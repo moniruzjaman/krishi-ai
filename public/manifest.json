@@ -1,0 +1,20 @@
+{
+  "name": "কৃষি এআই - স্মার্ট কৃষি সহায়ক",
+  "short_name": "কৃষি এআই",
+  "description": "বাংলাদেশের কৃষকদের জন্য এআই চালিত কৃষি সহায়ক",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1B5E20",
+  "theme_color": "#1B5E20",
+  "lang": "bn",
+  "categories": ["agriculture", "education", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
