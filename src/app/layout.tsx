@@ -18,10 +18,18 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
     apple: "/favicon.svg",
   },
+  appleWebApp: {
+    capable: true,
+    title: "কৃষি এআই",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     title: "কৃষি এআই - স্মার্ট কৃষি সহায়ক",
     description: "বাংলাদেশের কৃষকদের জন্য এআই চালিত কৃষি সহায়ক",
     type: "website",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 

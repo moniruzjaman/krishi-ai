@@ -1,7 +1,7 @@
 {
   "name": "কৃষি এআই - স্মার্ট কৃষি সহায়ক",
   "short_name": "কৃষি এআই",
-  "description": "বাংলাদেশের কৃষকদের জন্য এআই চালিত কৃষি সহায়ক",
+  "description": "বাংলাদেশের কৃষকদের জন্য এআই চালিত কৃষি সহায়ক। ফসল রোগ নির্ণয়, কৃষি পরামর্শ, বাজার মূল্য ও আবহাওয়া তথ্য।",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,10 +11,21 @@
   "categories": ["agriculture", "education", "utilities"],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/",
+  "display_override": ["standalone", "minimal-ui"]
 }

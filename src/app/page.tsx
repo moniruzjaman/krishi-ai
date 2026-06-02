@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState, useCallback } from 'react'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import {
   Home, MessageCircle, ScanLine, Wrench, BookOpen, User,
-  Leaf, Wifi, Battery, Signal, Bell
+  Leaf, Wifi, Battery, Signal, Bell, RefreshCw
 } from 'lucide-react'
 import { useKrishiStore, type TabId } from '@/lib/krishi-store'
 import HomeTab from '@/components/krishi/HomeTab'
@@ -13,6 +13,9 @@ import AnalyzerTab from '@/components/krishi/AnalyzerTab'
 import ToolsTab from '@/components/krishi/ToolsTab'
 import LearnTab from '@/components/krishi/LearnTab'
 import ProfileTab from '@/components/krishi/ProfileTab'
+import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
+import { nativeBridge } from '@/services/native-bridge'
 
 const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'হোম', icon: Home },
@@ -22,16 +25,26 @@ const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'learn', label: 'শিক্ষা', icon: BookOpen },
 ]
 
-const pageVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
+const tabOrder: TabId[] = ['home', 'chat', 'analyzer', 'tools', 'learn', 'profile']
+
+const swipeVariants = {
+  enter: {
+    x: 80,
+    opacity: 0,
+  },
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: {
+    x: -80,
+    opacity: 0,
+  },
 }
 
-const pageTransition = {
-  type: 'tween',
-  ease: 'easeOut',
-  duration: 0.2,
+const swipeTransition = {
+  x: { type: 'spring', stiffness: 300, damping: 30 },
+  opacity: { duration: 0.2 },
 }
 
 function StatusBar() {
@@ -71,7 +84,7 @@ function AppBar() {
   }
 
   return (
-    <div className="app-bar">
+    <div className="app-bar safe-top">
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
           <Leaf className="w-5 h-5 text-white" />
@@ -187,20 +200,43 @@ function SplashScreen({ onFinish }: { onFinish: () => void }) {
 }
 
 export default function KrishiApp() {
-  const { activeTab } = useKrishiStore()
+  const { activeTab, setActiveTab } = useKrishiStore()
   const [showSplash, setShowSplash] = useState(true)
+
+  const handleRefresh = useCallback(async () => {
+    await new Promise((r) => setTimeout(r, 1000))
+  }, [])
+
+  const { containerRef, pullDistance, isRefreshing } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    maxPull: 120,
+  })
+
+  const handleSwipeEnd = (_: unknown, info: PanInfo) => {
+    const currentIdx = tabOrder.indexOf(activeTab)
+    const swipeThreshold = 50
+    if (info.offset.x < -swipeThreshold && currentIdx < tabOrder.length - 1) {
+      setActiveTab(tabOrder[currentIdx + 1])
+    } else if (info.offset.x > swipeThreshold && currentIdx > 0) {
+      setActiveTab(tabOrder[currentIdx - 1])
+    }
+  }
 
   // Register service worker
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // SW registration failed silently
-      })
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
     }
   }, [])
 
+  // Initialize native bridge
+  useEffect(() => {
+    nativeBridge.isAvailable()
+  }, [])
+
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#f5f5f0] max-w-lg mx-auto overflow-hidden"
+    <div className="fixed inset-0 flex flex-col bg-[#f5f5f0] max-w-lg mx-auto overflow-hidden select-none"
       style={{ boxShadow: '0 0 30px rgba(0,0,0,0.1)' }}
     >
       <AnimatePresence>
@@ -212,22 +248,46 @@ export default function KrishiApp() {
           <StatusBar />
           <AppBar />
 
-          <main className="flex-1 overflow-y-auto custom-scroll">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <TabContent tab={activeTab} />
-              </motion.div>
-            </AnimatePresence>
+          <main className="flex-1 overflow-y-auto custom-scroll" ref={containerRef}>
+            <div className="relative min-h-full">
+              {/* Pull to refresh indicator */}
+              {pullDistance > 0 && (
+                <div
+                  className="flex items-center justify-center transition-transform"
+                  style={{
+                    height: pullDistance,
+                    opacity: Math.min(pullDistance / 80, 1),
+                  }}
+                >
+                  <RefreshCw
+                    className={`w-5 h-5 text-krishi-green ${isRefreshing ? 'animate-spin' : ''}`}
+                    style={{ transform: `rotate(${pullDistance * 3}deg)` }}
+                  />
+                </div>
+              )}
+
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={activeTab}
+                  variants={swipeVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={swipeTransition}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={handleSwipeEnd}
+                  style={{ touchAction: 'pan-y' }}
+                >
+                  <TabContent tab={activeTab} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </main>
 
           <BottomNav />
+          <PwaInstallPrompt />
         </>
       )}
     </div>

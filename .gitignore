@@ -18,3 +18,5 @@ krishi-ai-backend/venv/
 backend/.vercel/
 krishi-ai-backend/.vercel/
 plans/
+
+.vercel/.env.production.local
