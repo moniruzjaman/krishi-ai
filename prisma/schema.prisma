@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Krishi AI — Prisma Schema
+// Database: SQLite (dev) — can be switched to PostgreSQL/MySQL for production
+// Last updated: 2026-06-10
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +11,102 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── USER & AUTH ──────────────────────────────────────────────────────────────
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  phone     String?
+  district  String?  // Bangladesh district
+  role      String   @default("farmer") // farmer, expert, admin
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  scanResults  ScanResult[]
+  chatMessages ChatMessage[]
+  profile      FarmerProfile?
 }
 
-model Post {
+// ─── FARMER PROFILE ──────────────────────────────────────────────────────────
+
+model FarmerProfile {
+  id          String @id @default(cuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  district    String @default("ঢাকা")
+  crops       String // JSON array stored as string, e.g. '["ধান","গম"]'
+  farmSize    String @default("1-5 একর")
+  experience  String @default("5-10 বছর")
+  phone       String @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── CROP SCAN / ANALYSIS RESULTS ────────────────────────────────────────────
+
+model ScanResult {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  imageUrl        String   // URL or base64 reference of scanned image
+  diagnosis       String   // Disease name
+  disease         String   // Disease ID from DISEASE_DB
+  severity        String   @default("medium") // low, medium, high, critical
+  confidence      Float    @default(0.0) // 0.0 - 1.0
+  treatment       String   // Treatment recommendation
+  cropId          String?  // Crop identifier
+  plantPart       String?  // leaf, stem, fruit, root, whole, seed
+  causalType      String?  // fungus, bacteria, virus, pest, nematode, abiotic
+  diagnosisMethod String?  // ai, rule_based, manual
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([disease])
+  @@index([createdAt])
+}
+
+// ─── CHAT MESSAGES ───────────────────────────────────────────────────────────
+
+model ChatMessage {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  role      String   // user, assistant
+  content   String
+  category  String?  // optional topic category
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ─── DISEASE REPORT (persisted analysis) ─────────────────────────────────────
+
+model DiseaseReport {
+  id                 String   @id @default(cuid())
+  diseaseId          String   // References DISEASE_DB id
+  diseaseNameBn      String
+  diseaseNameEn      String
+  causalType         String
+  causalOrganism     String
+  affectedCrops      String   // JSON array
+  affectedParts      String   // JSON array
+  symptoms           String   // JSON array
+  severity           String
+  greenList          String   // JSON array — organic controls
+  yellowList         String   // JSON array — chemical controls
+  prevention         String   // JSON array
+  similarDiseases    String   // JSON array of disease IDs
+  spreadMethod       String
+  favorableConditions String
+  districts          String   // JSON array — Bangladesh districts
+  seasonality        String
+  scanCount          Int      @default(0) // how many times this disease was diagnosed
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([diseaseId])
+  @@index([causalType])
 }

@@ -55,8 +55,8 @@ Set these in Render Dashboard → Your Service → Environment:
 | `OPENROUTER_API_KEY` | (your OpenRouter key) | Optional |
 | `SECURE_PASSWORD` | (generate a secure password) | For API authentication |
 | `ALLOWED_ORIGINS` | https://krishiai-rbvdpdhfg-krishi-ai-team.vercel.app,https://www.krishiai.live,https://krishiai.live | |
-| `SUPABASE_URL` | https://nmngzjrrysjzuxfcklrk.supabase.co | |
-| `SUPABASE_KEY` | (your Supabase key) | |
+| `SUPABASE_URL` | https://nmngzjrrysjzuxfcklrk.supabase.co | <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. --> |
+| `SUPABASE_KEY` | (your Supabase key) | <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. --> |
 
 ## Get API Keys
 

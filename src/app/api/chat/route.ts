@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { callGeminiChat, getActiveModelLabel } from '@/lib/gemini'
+import { callGeminiChat } from '@/lib/gemini'
 
 const BENGALI_RULES: Record<string, string> = {
   'ধান': 'ধান চাষের জন্য মাটির pH ৫.৫-৬.৫ হওয়া উচিত। সঠিক সময়ে সার প্রয়োগ করুন এবং পানি নিষ্কাশন নিশ্চিত করুন। বোরো মৌসুমে উন্নত জাত ব্যবহার করুন।',

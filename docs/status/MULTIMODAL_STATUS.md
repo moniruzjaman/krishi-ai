@@ -211,6 +211,7 @@ All dependencies are already installed:
 {
   "@google/genai": "^1.34.0",  // Multi-modal AI
   "firebase": "^11.2.0",       // Auth & Storage
+  <!-- DEPRECATED: Supabase has been replaced by Prisma. @supabase/supabase-js is no longer a dependency. -->
   "@supabase/supabase-js": "^2.48.1"  // Database
 }
 ```
@@ -224,6 +225,7 @@ No additional packages needed for current features!
 - API keys stored in `.env` (never commit)
 - Vercel environment variables encrypted
 - Firebase rules configured for authenticated users
+<!-- DEPRECATED: Supabase has been replaced by Prisma. RLS is no longer applicable. -->
 - Supabase RLS enabled
 
 ---

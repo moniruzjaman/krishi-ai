@@ -51,6 +51,7 @@ VITE_FIREBASE_STORAGE_BUCKET=agriadvisoryai.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=498163867458
 VITE_FIREBASE_APP_ID=1:498163867458:web:d53de085f0f56acbc472db
 
+<!-- DEPRECATED: Supabase has been replaced by Prisma. These variables are no longer needed. -->
 # Supabase Configuration
 VITE_SUPABASE_URL=https://nmngzjrrysjzuxfcklrk.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tbmd6anJyeXNqenV4ZmNrbHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDY3MDA4MTUsImV4cCI6MjAyMjI3NjgxNX0.SLDiC6uj7f8U-MTS4kqNgd650n4w7rLz4J7wL7wL7wL

@@ -29,6 +29,7 @@ The project has been built and the production files are in the `dist` folder.
    - **Root directory**: `/` (or leave empty)
 6. Add environment variables if needed:
    - `API_KEY` - Your API key
+   <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. -->
    - `SUPABASE_KEY` - Your Supabase key
 7. Click **"Save and Deploy"**
 
@@ -39,7 +40,7 @@ Make sure to set these in Cloudflare Pages Settings → Environment Variables:
 | Variable | Description |
 |----------|-------------|
 | `API_KEY` | Your Gemini API key |
-| `SUPABASE_KEY` | Your Supabase anon key |
+| `SUPABASE_KEY` | Your Supabase anon key | <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. -->
 
 ## Custom Domain (Optional)
 

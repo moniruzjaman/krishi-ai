@@ -33,9 +33,10 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         value: https://krishiai-rbvdpdhfg-krishi-ai-team.vercel.app,https://www.krishiai.live,https://krishiai.live
-      - key: SUPABASE_KEY
-        sync: false
-      - key: SUPABASE_URL
-        sync: false
+      # DEPRECATED: Supabase has been replaced by Prisma. These variables are no longer needed.
+      # - key: SUPABASE_KEY
+      #   sync: false
+      # - key: SUPABASE_URL
+      #   sync: false
     autoDeploy: true
     healthCheckPath: /health

@@ -88,6 +88,7 @@ Every analysis → Gemini Premium ($0.50/1K tokens)
   "@huggingface/inference": "^2.8.1",
   "@google/genai": "^1.34.0",
   "firebase": "^11.2.0",
+  <!-- DEPRECATED: Supabase has been replaced by Prisma. @supabase/supabase-js is no longer a dependency. -->
   "@supabase/supabase-js": "^2.48.1"
 }
 ```

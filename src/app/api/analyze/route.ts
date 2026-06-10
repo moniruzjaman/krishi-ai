@@ -10,7 +10,7 @@ import {
   type CausalType,
   CAUSAL_TYPE_LABELS,
 } from '@/lib/disease-db'
-import { callGeminiVision, getActiveModelLabel } from '@/lib/gemini'
+import { callGeminiVision } from '@/lib/gemini'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 

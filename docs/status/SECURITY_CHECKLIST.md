@@ -11,7 +11,7 @@
 | **OpenRouter Key** | ✅ Removed from git | Vercel only |
 | **Hugging Face Token** | ✅ Removed from git | Vercel only |
 | **OpenAI Key** | ✅ Removed from git | Vercel only |
-| **Supabase Key** | ✅ Safe (anon key) | Vercel only |
+| **Supabase Key** | ✅ Safe (anon key) | Vercel only | <!-- DEPRECATED: Supabase has been replaced by Prisma. This key is no longer needed. -->
 
 ---
 
@@ -66,8 +66,8 @@ Go to: https://vercel.com/krishi-ai-team/krishiai-flixcn4v2/settings/environment
 | `VITE_GEMINI_API_KEY` | User must set | ⚠️ Required |
 | `VITE_OPENROUTER_API_KEY` | User must set | ⚠️ Required |
 | `VITE_HF_TOKEN` | User must set | ⚠️ Optional |
-| `VITE_SUPABASE_URL` | User must set | ⚠️ Required |
-| `VITE_SUPABASE_ANON_KEY` | User must set | ⚠️ Required |
+| `VITE_SUPABASE_URL` | User must set | ⚠️ Required | <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. -->
+| `VITE_SUPABASE_ANON_KEY` | User must set | ⚠️ Required | <!-- DEPRECATED: Supabase has been replaced by Prisma. This variable is no longer needed. -->
 | `VITE_BACKEND_URL` | User must set | ⚠️ Required |
 
 **Already in Code (Safe):**
@@ -294,7 +294,7 @@ GitHub automatically scans for:
 - **Vercel Security:** https://vercel.com/security
 - **GitHub Secret Scanning:** https://docs.github.com/en/code-security/secret-scanning
 - **Firebase Security:** https://firebase.google.com/docs/rules
-- **Supabase Security:** https://supabase.com/docs/guides/auth/row-level-security
+- **Supabase Security:** https://supabase.com/docs/guides/auth/row-level-security <!-- DEPRECATED: Supabase has been replaced by Prisma. This reference is no longer applicable. -->
 
 ---
 

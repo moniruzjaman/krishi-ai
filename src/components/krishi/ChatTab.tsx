@@ -6,7 +6,7 @@ import { Bot, Trash2, Send, Mic, Sparkles, Wifi } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useKrishiStore, type ChatMessage } from '@/lib/krishi-store'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 
 const CATEGORY_CHIPS = [
   'ধান চাষ', 'রোগ নির্ণয়', 'সার পরামর্শ', 'আবহাওয়া',
@@ -263,7 +263,7 @@ export default function ChatTab() {
             variant="ghost"
             size="icon"
             className="h-10 w-10 shrink-0 text-muted-foreground"
-            onClick={() => toast.info('শীঘ্রই আসছে')}
+            onClick={() => toast({ title: 'শীঘ্রই আসছে', description: 'ভয়েস ইনপুট ফিচার শীঘ্রই যুক্ত হবে' })}
           >
             <Mic className="w-5 h-5" />
           </Button>

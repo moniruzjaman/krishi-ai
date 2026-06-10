@@ -1,0 +1,81 @@
+# Legacy dead-code directories — DISABLED (not deleted)
+# Updated: 2026-06-10
+# These files are NOT imported by any active code under src/
+# Active components live in: src/components/krishi/ and src/components/ui/
+# Active services live in: src/lib/ and src/services/
+#
+# ACTION TAKEN: Directories renamed with _disabled_ prefix instead of deletion
+#   components/ → _disabled_components/
+#   services/   → _disabled_services/
+# Both directories are in .gitignore to prevent build processing
+# To re-enable: rename directories back and add necessary imports
+
+## _disabled_components/ (formerly components/ — 45 files)
+_disabled_components/About.tsx
+_disabled_components/AgriPodcast.tsx
+_disabled_components/AIYieldPredictor.tsx
+_disabled_components/Analyzer.tsx
+_disabled_components/AppUtility.tsx
+_disabled_components/BiocontrolGuide.tsx
+_disabled_components/CABIDiagnosisTraining.tsx
+_disabled_components/ChatBot.tsx
+_disabled_components/CropCalendar.tsx
+_disabled_components/CropDiseaseLibrary.tsx
+_disabled_components/DynamicPrecisionForm.tsx
+_disabled_components/EnhancedCABIDiagnosisTraining.tsx
+_disabled_components/FAQ.tsx
+_disabled_components/FeatureHighlights.tsx
+_disabled_components/FeedbackModal.tsx
+_disabled_components/FieldMap.tsx
+_disabled_components/FieldMonitoring.tsx
+_disabled_components/FlashcardView.tsx
+_disabled_components/FarmerAvatar.tsx
+_disabled_components/GoogleAdBanner.tsx
+_disabled_components/GuidedTour.tsx
+_disabled_components/Hero.tsx
+_disabled_components/HomeSections.tsx
+_disabled_components/LearningCenter.tsx
+_disabled_components/LeafColorChart.tsx
+_disabled_components/Logo.tsx
+_disabled_components/MarketPriceHorizontal.tsx
+_disabled_components/NutrientCalculator.tsx
+_disabled_components/OptimizedAnalyzer.tsx
+_disabled_components/PesticideExpert.tsx
+_disabled_components/PlantDefenseGuide.tsx
+_disabled_components/QRGenerator.tsx
+_disabled_components/SearchTool.tsx
+_disabled_components/ShareDialog.tsx
+_disabled_components/SoilExpert.tsx
+_disabled_components/SoilGuide.tsx
+_disabled_components/StudentHub.tsx
+_disabled_components/TaskScheduler.tsx
+_disabled_components/ToolGuideHeader.tsx
+_disabled_components/ToolsHub.tsx
+_disabled_components/UserProfile.tsx
+_disabled_components/VideoGenerator.tsx
+_disabled_components/Weather.tsx
+_disabled_components/WeatherHorizontal.tsx
+_disabled_components/YieldCalculator.tsx
+
+## _disabled_services/ (formerly services/ — 21 files, includes SUPABASE)
+_disabled_services/bangladeshPrompts.ts
+_disabled_services/csvLoader.ts
+_disabled_services/directAnalysisEnhancer.ts
+_disabled_services/enhancedCostAwareAnalyzer.ts
+_disabled_services/enhancedRuleBasedAnalyzer.ts
+_disabled_services/firebase.ts
+_disabled_services/geminiService.ts
+_disabled_services/huggingfaceService.ts
+_disabled_services/localClassifierWeb.ts
+_disabled_services/locationService.ts
+_disabled_services/modelService.ts
+_disabled_services/ruleBasedAnalyzer.ts
+_disabled_services/shareService.ts
+_disabled_services/supabase.ts          # DEPRECATED — Supabase replaced by Prisma
+_disabled_services/supabaseStorage.ts   # DEPRECATED — Supabase replaced by Prisma
+_disabled_services/search/cache/searchCache.ts
+_disabled_services/search/handlers/deployHandler.ts
+_disabled_services/search/handlers/marketHandler.ts
+_disabled_services/search/knowledgeBase/deploymentFAQs.ts
+_disabled_services/search/queryClassifier.ts
+_disabled_services/search/types/searchTypes.ts

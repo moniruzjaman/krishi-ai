@@ -7,6 +7,7 @@
 - [ ] `VITE_OPENROUTER_API_KEY` - Set and valid  
 - [ ] `VITE_HF_TOKEN` - Set (optional, for HF integration)
 - [ ] `VITE_FIREBASE_*` - All Firebase config set
+<!-- DEPRECATED: Supabase has been replaced by Prisma. These variables are no longer needed. -->
 - [ ] `VITE_SUPABASE_*` - All Supabase config set
 
 ### 2. Dependencies
@@ -233,6 +234,7 @@ https://krishiai-rbvdpdhfg-krishi-ai-team.vercel.app
 - [ ] API keys rotated (if compromised)
 - [ ] Vercel environment variables encrypted
 - [ ] Firebase rules configured
+<!-- DEPRECATED: Supabase has been replaced by Prisma. RLS is no longer applicable. -->
 - [ ] Supabase RLS enabled
 
 ---

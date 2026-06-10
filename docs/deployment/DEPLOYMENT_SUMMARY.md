@@ -47,6 +47,7 @@ VITE_OPENROUTER_API_KEY=sk-or-your_key_here
 ```
 
 ### Recommended
+<!-- DEPRECATED: Supabase has been replaced by Prisma. These variables are no longer needed. -->
 ```bash
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key_here

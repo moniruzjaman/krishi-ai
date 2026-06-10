@@ -37,6 +37,10 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "_disabled_components",
+    "_disabled_services",
+    "_disabled_tests",
+    "krishi-ai-backend"
   ]
 }
