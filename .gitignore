@@ -62,3 +62,5 @@ plans/
 # Disabled legacy directories (renamed from components/, services/, tests/)
 # These are tracked by git but excluded from TypeScript compilation via tsconfig.json
 # Do NOT add them to .gitignore — the code must be preserved for potential future use
+.open-next
+.dev.vars
