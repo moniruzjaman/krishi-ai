@@ -108,6 +108,44 @@ Use them as: `bg-krishi-green`, `text-krishi-amber`, `border-krishi-sky`
 - Category labels in Bengali
 - Comments in code can be in English or Bengali
 
+## Theming (Light / Dark)
+
+- `next-themes` provides the toggle. `ThemeProvider` (`src/components/krishi/ThemeProvider.tsx`)
+  wraps the app in `src/app/layout.tsx` and sets the `dark` class on `<html>`.
+- Token overrides live in the `.dark { ... }` block in `src/app/globals.css`.
+  Never hardcode `background: white` in a component — use the semantic
+  `--card` / `--background` / `--border` tokens so the surface follows the theme.
+- Component-level overrides use Tailwind's `dark:` variant
+  (`@custom-variant dark (&:is(.dark *))` is already declared).
+- For a mounted-guard (client-only rendering), use `useSyncExternalStore` with
+  `() => true` as the client snapshot and `() => false` as the server snapshot —
+  do **not** call `setState` inside an effect.
+
+## State That Lives in localStorage
+
+Anything read from `localStorage` must go through `useSyncExternalStore`, not
+`useState` + `useEffect`. The store module owns a `subscribeX(cb)` function and
+emits a change event whenever the value is written:
+
+```ts
+// src/lib/analytics.ts
+export function subscribeAnalytics(callback: () => void): () => void {
+  window.addEventListener(CHANGE_EVENT, callback)
+  return () => window.removeEventListener(CHANGE_EVENT, callback)
+}
+```
+
+```tsx
+const analyticsOn = useSyncExternalStore(
+  subscribeAnalytics,
+  isAnalyticsEnabled,
+  () => false   // server snapshot
+)
+```
+
+`react-hooks/set-state-in-effect` is an **error** in this project's ESLint config —
+do not introduce new violations.
+
 ## Testing Strategy
 
 - No formal test suite currently

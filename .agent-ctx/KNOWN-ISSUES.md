@@ -1,46 +1,42 @@
 # Known Issues & Technical Debt
 
-## Current Issues (as of 2026-06-10)
-
-### 🟡 Prisma Schema Unused
-- `prisma/schema.prisma` defines `User` and `Post` models (SQLite)
-- `src/lib/db.ts` was a Prisma client singleton — **deleted** (was never imported)
-- `@prisma/client` and `prisma` are still in package.json dependencies
-- **Action needed**: Either remove Prisma dependencies entirely, or integrate a proper database for user data persistence
-
-### 🟡 Tailwind Config Dead File
-- `tailwind.config.ts` exists but Tailwind CSS v4 ignores it
-- All actual theme tokens are in `src/app/globals.css` via `@theme inline`
-- **Action needed**: Delete `tailwind.config.ts` to avoid confusion
-
-### 🟡 Dead Code Directories
-- `components/` (root) — 45 `.tsx` files from earlier iteration
-- `services/` (root) — 21 `.ts` files from earlier iteration
-- A manifest of these files exists at `.archived-files-manifest`
-- **Action needed**: After review, delete both directories with `rm -r components/ services/`
+## Current Issues (as of 2026-11-06)
 
 ### 🟡 Dual Deployment Duplication
-- `src/app/api/` contains Next.js API routes (for Vercel)
+- `src/app/api/` contains Next.js API routes (for Vercel / OpenNext)
 - `functions/api/` contains Cloudflare Pages Functions (duplicate logic)
 - **Action needed**: Consider extracting shared logic into a shared module
 
-### 🟡 Service Worker Incomplete
-- `public/sw.js` doesn't pre-cache the HTML shell or `_next/` chunks
-- Offline experience is limited to cached API responses
-- **Action needed**: Add critical asset pre-caching for full offline support
+### 🟡 Test Coverage Absent
+- No formal test suite exists. `_disabled_tests/` holds legacy tests for the
+  old `services/` code and will not pass against the current architecture
+- **Action needed**: Add tests for `src/lib/gemini.ts` (3-tier cascade) and
+  `src/app/api/*` route handlers
 
-### 🟢 Sonner Component Unused
-- `src/components/ui/sonner.tsx` imports `useTheme` from `next-themes`
-- `next-themes` is a dependency but the app doesn't use theme switching
-- The Sonner Toaster is never rendered in the layout
-- **Action needed**: Remove `src/components/ui/sonner.tsx` and consider removing `next-themes` if unused
+### 🟢 `functions/` Directory Unused by Primary Deploy
+- The GitHub Actions workflow (`cf:build` → OpenNext → Cloudflare Workers)
+  does not use `functions/`. It is only relevant for legacy Cloudflare Pages
+- **Action needed**: Confirm whether legacy Pages deployment is still needed
 
-### 🟢 Test Files Outdated
-- `tests/` directory contains tests for the old `services/` code
-- These tests won't pass against the current codebase
-- **Action needed**: Remove `tests/` or update tests for current architecture
+### 🟢 Prisma References in Legacy Docs
+- `docs/deployment/*` and `docs/status/*` still describe the Prisma/SQLite setup
+  that was removed in this session
+- **Action needed**: Refresh the stale deployment docs
 
-## Resolved Issues (Fixed in This Session)
+## Resolved Issues (Fixed 2026-11-06)
+
+| Issue | Status | Fix Applied |
+|-------|--------|-------------|
+| Dark mode not implemented (`next-themes` installed but unused) | ✅ Fixed | Added `ThemeProvider` (next-themes), `.dark` token overrides in `globals.css`, `ThemeToggle` in the app bar, `dark:` variants across all six tab components |
+| Service worker did not cache the HTML shell or `_next/` chunks | ✅ Fixed | Rewrote `public/sw.js` (v4): network-first navigations with cached shell fallback, cache-first `_next/static`, RSC (`?_rsc=`) handling, `public/offline.html` |
+| Prisma schema + `@prisma/client` unused and runtime-incompatible | ✅ Fixed | Deleted `prisma/schema.prisma`, `src/lib/db.ts`, the `@prisma/client` + `prisma` dependencies and the `db:*` scripts. SQLite Prisma cannot run on Cloudflare Workers (the primary deploy target) and `PROJECT.md` states no database is required |
+| `tailwind.config.ts` was a dead file (Tailwind v4 ignores it) | ✅ Fixed | Deleted the file. All tokens live in `src/app/globals.css` via `@theme inline` |
+| `src/components/ui/sonner.tsx` unused | ✅ Fixed | Deleted. Toasts use `@/hooks/use-toast` |
+| Bell icon in the app bar did nothing | ✅ Fixed | Wired to `AlertSheet` — severe-weather alerts from Open-Meteo (keyless), with optional OS notifications |
+| No privacy policy page | ✅ Fixed | Added `public/privacy.html` (required for Google Play / Apple App Store) |
+| `.mat-card` / `.bottom-nav` / `.chat-bubble-assistant` hardcoded `background: white` | ✅ Fixed | Switched to the semantic `--card` / `--border` tokens so they follow the theme |
+
+## Previously Resolved Issues (2026-06-10)
 
 | Issue | Status | Fix Applied |
 |-------|--------|-------------|

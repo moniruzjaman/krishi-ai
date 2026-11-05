@@ -57,6 +57,9 @@ interface KrishiState {
 
   toolsSubPage: string | null
   setToolsSubPage: (page: string | null) => void
+
+  isAlertOpen: boolean
+  setAlertOpen: (open: boolean) => void
 }
 
 const defaultProfile: FarmerProfile = {
@@ -128,6 +131,9 @@ export const useKrishiStore = create<KrishiState>((set, get) => ({
 
   toolsSubPage: null,
   setToolsSubPage: (page) => set({ toolsSubPage: page }),
+
+  isAlertOpen: false,
+  setAlertOpen: (open) => set({ isAlertOpen: open }),
 }))
 
 // Hydrate from localStorage on client

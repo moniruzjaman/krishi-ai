@@ -43,8 +43,6 @@ krishi-ai/
 ├── functions/api/                ← Cloudflare Pages Functions (mirrors src/app/api/)
 │   ├── analyze.js
 │   └── chat.js
-├── prisma/
-│   └── schema.prisma             ← UNUSED — User/Post models (dead code)
 ├── data/
 │   ├── cabi_training_images.csv  ← CABI training data reference
 │   └── crop_diagnosis.csv        ← Crop diagnosis reference data

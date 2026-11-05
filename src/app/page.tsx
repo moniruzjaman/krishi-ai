@@ -6,6 +6,7 @@ import {
   Home, MessageCircle, ScanLine, Wrench, BookOpen, User,
   Leaf, Wifi, Battery, Signal, Bell, RefreshCw
 } from 'lucide-react'
+import ThemeToggle from '@/components/krishi/ThemeToggle'
 import { useKrishiStore, type TabId } from '@/lib/krishi-store'
 import HomeTab from '@/components/krishi/HomeTab'
 import ChatTab from '@/components/krishi/ChatTab'
@@ -14,6 +15,7 @@ import ToolsTab from '@/components/krishi/ToolsTab'
 import LearnTab from '@/components/krishi/LearnTab'
 import ProfileTab from '@/components/krishi/ProfileTab'
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
+import AlertSheet from '@/components/krishi/AlertSheet'
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
 import { nativeBridge } from '@/services/native-bridge'
 
@@ -95,9 +97,14 @@ function AppBar() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <button className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20 transition-colors">
+        <button
+          onClick={() => useKrishiStore.getState().setAlertOpen(true)}
+          className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20 transition-colors"
+          aria-label="সতর্কতা"
+        >
           <Bell className="w-4.5 h-4.5 text-white" />
         </button>
+        <ThemeToggle />
         <button
           onClick={() => useKrishiStore.getState().setActiveTab('profile')}
           className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors"
@@ -200,7 +207,7 @@ function SplashScreen({ onFinish }: { onFinish: () => void }) {
 }
 
 export default function KrishiApp() {
-  const { activeTab, setActiveTab } = useKrishiStore()
+  const { activeTab, setActiveTab, isAlertOpen, setAlertOpen } = useKrishiStore()
   const [showSplash, setShowSplash] = useState(true)
 
   const handleRefresh = useCallback(async () => {
@@ -230,13 +237,21 @@ export default function KrishiApp() {
     }
   }, [])
 
+  // Analytics: pageview + tab change. No-op unless the user opted in.
+  useEffect(() => {
+    import('@/lib/analytics').then((m) => {
+      m.trackPageview()
+      m.Events.TAB_OPEN(activeTab)
+    })
+  }, [activeTab])
+
   // Initialize native bridge
   useEffect(() => {
     nativeBridge.isAvailable()
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#f5f5f0] max-w-lg mx-auto overflow-hidden select-none"
+    <div className="fixed inset-0 flex flex-col bg-[#f5f5f0] dark:bg-[#0f1512] max-w-lg mx-auto overflow-hidden select-none transition-colors"
       style={{ boxShadow: '0 0 30px rgba(0,0,0,0.1)' }}
     >
       <AnimatePresence>
@@ -288,6 +303,10 @@ export default function KrishiApp() {
 
           <BottomNav />
           <PwaInstallPrompt />
+          <AlertSheet
+            open={isAlertOpen}
+            onClose={() => setAlertOpen(false)}
+          />
         </>
       )}
     </div>

@@ -102,7 +102,7 @@ export default function ToolsTab() {
         {toolsSubPage === 'plant-health' && (
           <motion.div key="plant-health" {...slideIn} transition={{ duration: 0.25 }} className="space-y-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => { setToolsSubPage(null); setShowAdvice(false) }} className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center ripple">
+              <button onClick={() => { setToolsSubPage(null); setShowAdvice(false) }} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center ripple">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </button>
               <h2 className="text-lg font-bold text-foreground">উদ্ভিদ স্বাস্থ্য</h2>
@@ -114,7 +114,7 @@ export default function ToolsTab() {
                 <div className="flex flex-wrap gap-1.5">
                   {CROPS.map((c) => (
                     <button key={c} onClick={() => { setSelectedCrop(c); setShowAdvice(false) }}
-                      className={`mat-chip ripple ${selectedCrop === c ? 'bg-krishi-green text-white' : 'bg-gray-100 text-foreground'}`}>{c}</button>
+                      className={`mat-chip ripple ${selectedCrop === c ? 'bg-krishi-green text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{c}</button>
                   ))}
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function ToolsTab() {
                 <div className="flex flex-wrap gap-1.5">
                   {SYMPTOMS.map((s) => (
                     <button key={s} onClick={() => { setSelectedSymptom(s); setShowAdvice(false) }}
-                      className={`mat-chip ripple ${selectedSymptom === s ? 'bg-krishi-green text-white' : 'bg-gray-100 text-foreground'}`}>{s}</button>
+                      className={`mat-chip ripple ${selectedSymptom === s ? 'bg-krishi-green text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{s}</button>
                   ))}
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function ToolsTab() {
         {toolsSubPage === 'soil-audit' && (
           <motion.div key="soil-audit" {...slideIn} transition={{ duration: 0.25 }} className="space-y-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => setToolsSubPage(null)} className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center ripple">
+              <button onClick={() => setToolsSubPage(null)} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center ripple">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </button>
               <h2 className="text-lg font-bold text-foreground">মাটি অডিট</h2>
@@ -201,7 +201,7 @@ export default function ToolsTab() {
         {toolsSubPage === 'crop-library' && (
           <motion.div key="crop-library" {...slideIn} transition={{ duration: 0.25 }} className="space-y-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => { setToolsSubPage(null); setExpandedCrop(null) }} className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center ripple">
+              <button onClick={() => { setToolsSubPage(null); setExpandedCrop(null) }} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center ripple">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </button>
               <h2 className="text-lg font-bold text-foreground">ফসল পথিকা</h2>
@@ -239,7 +239,7 @@ export default function ToolsTab() {
         {toolsSubPage === 'pesticide' && (
           <motion.div key="pesticide" {...slideIn} transition={{ duration: 0.25 }} className="space-y-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => setToolsSubPage(null)} className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center ripple">
+              <button onClick={() => setToolsSubPage(null)} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center ripple">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </button>
               <h2 className="text-lg font-bold text-foreground">কীটনাশক গাইড</h2>
