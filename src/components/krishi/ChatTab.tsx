@@ -14,9 +14,9 @@ const CATEGORY_CHIPS = [
 ]
 
 const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
-  gemini: { label: 'Gemini 2.5 Flash', color: 'bg-blue-100 text-blue-700' },
+  gemini: { label: 'Gemini 2.5 Flash', color: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' },
   openrouter: { label: 'OpenRouter', color: 'bg-purple-100 text-purple-700' },
-  rules: { label: 'Rule-based', color: 'bg-amber-100 text-amber-700' },
+  rules: { label: 'Rule-based', color: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300' },
 }
 
 function TypingIndicator() {
@@ -139,7 +139,7 @@ export default function ChatTab() {
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-border/50 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-card border-b border-border/50 shrink-0">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-krishi-green/10">
             <Bot className="w-5 h-5 text-krishi-green" />
@@ -161,14 +161,14 @@ export default function ChatTab() {
           variant="ghost"
           size="icon"
           onClick={handleClearChat}
-          className={`h-9 w-9 ${showClearConfirm ? 'text-red-500 bg-red-50' : 'text-muted-foreground'}`}
+          className={`h-9 w-9 ${showClearConfirm ? 'text-red-500 bg-red-50 dark:bg-red-950' : 'text-muted-foreground'}`}
         >
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>
 
       {/* Category Chips */}
-      <div className="px-3 py-2 flex gap-2 overflow-x-auto custom-scroll shrink-0 bg-white/50">
+      <div className="px-3 py-2 flex gap-2 overflow-x-auto custom-scroll shrink-0 bg-white/50 dark:bg-card/50">
         {CATEGORY_CHIPS.map((chip) => (
           <button
             key={chip}
@@ -257,7 +257,7 @@ export default function ChatTab() {
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 px-3 py-2.5 bg-white border-t border-border/50 elevation-2">
+      <div className="shrink-0 px-3 py-2.5 bg-white dark:bg-card border-t border-border/50 elevation-2">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -267,7 +267,7 @@ export default function ChatTab() {
           >
             <Mic className="w-5 h-5" />
           </Button>
-          <div className="flex-1 flex items-center bg-gray-50 rounded-2xl border border-border/50 px-3">
+          <div className="flex-1 flex items-center bg-gray-50 dark:bg-muted rounded-2xl border border-border/50 px-3">
             <input
               ref={inputRef}
               type="text"

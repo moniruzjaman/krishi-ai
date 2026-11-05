@@ -774,7 +774,7 @@ function DiseaseCard({
                   className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-medium transition-all ${
                     activeTab === 'green'
                       ? 'bg-krishi-green text-white'
-                      : 'bg-white text-muted-foreground hover:bg-krishi-green/5'
+                      : 'bg-white dark:bg-card text-muted-foreground hover:bg-krishi-green/5'
                   }`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -785,7 +785,7 @@ function DiseaseCard({
                   className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-medium transition-all ${
                     activeTab === 'yellow'
                       ? 'bg-krishi-amber text-white'
-                      : 'bg-white text-muted-foreground hover:bg-krishi-amber/5'
+                      : 'bg-white dark:bg-card text-muted-foreground hover:bg-krishi-amber/5'
                   }`}
                 >
                   <AlertTriangle className="w-3.5 h-3.5" />

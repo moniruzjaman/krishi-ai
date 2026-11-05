@@ -1,14 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { motion } from 'framer-motion'
 import {
-  User, MapPin, Pencil, Save, CheckCircle, Trash2, Info, MessageSquare
+  User, MapPin, Pencil, Save, CheckCircle, Trash2, Info, MessageSquare,
+  Settings, BarChart3, ShieldCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import ThemeToggle from '@/components/krishi/ThemeToggle'
 import { useKrishiStore } from '@/lib/krishi-store'
+import {
+  getAnalyticsUrl,
+  isAnalyticsEnabled,
+  setAnalyticsEnabled,
+  setAnalyticsUrl,
+  subscribeAnalytics,
+  Events as AnalyticsEvents,
+} from '@/lib/analytics'
 
 const DISTRICTS = ['ঢাকা', 'চট্টগ্রাম', 'রাজশাহী', 'খুলনা', 'বরিশাল', 'সিলেট', 'রংপুর', 'ময়মনসিংহ']
 const CROP_OPTIONS = ['ধান', 'গম', 'পাট', 'আলু', 'সরিষা', 'পেঁয়াজ', 'ভুট্টা', 'ডাল']
@@ -33,6 +43,14 @@ export default function ProfileTab() {
   const { farmerProfile, updateFarmerProfile } = useKrishiStore()
   const [form, setForm] = useState({ ...farmerProfile })
   const [saved, setSaved] = useState(false)
+
+  // Analytics preference lives in localStorage, so read it through a
+  // subscription rather than mirroring it into React state.
+  const analyticsOn = useSyncExternalStore(
+    subscribeAnalytics,
+    isAnalyticsEnabled,
+    () => false
+  )
 
   const toggleCrop = (crop: string) => {
     setForm((f) => ({
@@ -105,7 +123,7 @@ export default function ProfileTab() {
           <div className="flex flex-wrap gap-1.5">
             {DISTRICTS.map((d) => (
               <button key={d} onClick={() => setForm((f) => ({ ...f, district: d }))}
-                className={`mat-chip ripple ${form.district === d ? 'bg-krishi-green text-white' : 'bg-gray-100 text-foreground'}`}>{d}</button>
+                className={`mat-chip ripple ${form.district === d ? 'bg-krishi-green text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{d}</button>
             ))}
           </div>
         </div>
@@ -115,7 +133,7 @@ export default function ProfileTab() {
           <div className="flex flex-wrap gap-1.5">
             {CROP_OPTIONS.map((c) => (
               <button key={c} onClick={() => toggleCrop(c)}
-                className={`mat-chip ripple ${form.crops.includes(c) ? 'bg-krishi-amber text-white' : 'bg-gray-100 text-foreground'}`}>{c}</button>
+                className={`mat-chip ripple ${form.crops.includes(c) ? 'bg-krishi-amber text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{c}</button>
             ))}
           </div>
         </div>
@@ -125,7 +143,7 @@ export default function ProfileTab() {
           <div className="flex flex-wrap gap-1.5">
             {FARM_SIZES.map((s) => (
               <button key={s} onClick={() => setForm((f) => ({ ...f, farmSize: s }))}
-                className={`mat-chip ripple ${form.farmSize === s ? 'bg-krishi-sky text-white' : 'bg-gray-100 text-foreground'}`}>{s}</button>
+                className={`mat-chip ripple ${form.farmSize === s ? 'bg-krishi-sky text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{s}</button>
             ))}
           </div>
         </div>
@@ -135,7 +153,7 @@ export default function ProfileTab() {
           <div className="flex flex-wrap gap-1.5">
             {EXPERIENCES.map((e) => (
               <button key={e} onClick={() => setForm((f) => ({ ...f, experience: e }))}
-                className={`mat-chip ripple ${form.experience === e ? 'bg-krishi-earth text-white' : 'bg-gray-100 text-foreground'}`}>{e}</button>
+                className={`mat-chip ripple ${form.experience === e ? 'bg-krishi-earth text-white' : 'bg-gray-100 dark:bg-muted text-foreground'}`}>{e}</button>
             ))}
           </div>
         </div>
@@ -169,6 +187,82 @@ export default function ProfileTab() {
           className="w-full h-9 rounded-xl border-krishi-green/30 text-krishi-green text-xs">
           <MessageSquare className="w-3.5 h-3.5" /> মতামত দিন
         </Button>
+      </motion.div>
+
+      {/* Settings */}
+      <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible"
+        className="mat-card elevation-1 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-krishi-sky/10 flex items-center justify-center">
+            <Settings className="w-4 h-4 text-krishi-sky" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">সেটিংস</h3>
+            <p className="text-[10px] text-muted-foreground">অ্যাপের পছন্দ</p>
+          </div>
+        </div>
+
+        {/* Theme */}
+        <div className="flex items-center justify-between py-1">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground">থিম</p>
+            <p className="text-[10px] text-muted-foreground">
+              উজ্জ্বল বা অন্ধকার থিম বেছে নিন
+            </p>
+          </div>
+          <ThemeToggle className="bg-muted text-foreground" />
+        </div>
+
+        {/* Analytics */}
+        <div className="flex items-center justify-between py-1">
+          <div className="min-w-0 flex-1 pr-3">
+            <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5" />
+              ব্যবহার পরিসংখ্যান
+            </p>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              কোনো ব্যক্তিগত তথ্য ছাড়া, কুকি ছাড়া। সম্পূর্ণ ঐচ্ছিক।
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              if (analyticsOn) {
+                setAnalyticsEnabled(false)
+                AnalyticsEvents.ANALYTICS_TOGGLE(false)
+                return
+              }
+              const url = window.prompt(
+                'পরিসংখ্যান সার্ভারের URL দিন (Plausible / Umami):\nখালি রাখলে https://plausible.io ব্যবহার হবে।',
+                getAnalyticsUrl() || 'https://plausible.io'
+              )
+              if (url === null) return
+              setAnalyticsUrl(url.trim() || 'https://plausible.io')
+              setAnalyticsEnabled(true)
+              AnalyticsEvents.ANALYTICS_TOGGLE(true)
+            }}
+            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+              analyticsOn ? 'bg-krishi-green' : 'bg-muted'
+            }`}
+            aria-label="ব্যবহার পরিসংখ্যান"
+          >
+            <span
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                analyticsOn ? 'translate-x-[22px]' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Privacy */}
+        <a
+          href="/privacy.html"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2 pt-2 border-t border-border/30 text-xs text-muted-foreground hover:text-krishi-green transition-colors"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          গোপনীয়তা নীতি পড়ুন
+        </a>
       </motion.div>
 
       {/* Quick Actions */}

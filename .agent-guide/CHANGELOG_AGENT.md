@@ -4,6 +4,66 @@ This file logs all automated changes made by AI agents to the Krishi AI codebase
 
 ---
 
+## 2026-11-06 — Dark Mode, Offline Support, Weather Alerts & Privacy
+
+**Agent:** MCode (Mavis)
+
+Scope: resolve the open issues tracked in `.agent-ctx/KNOWN-ISSUES.md` and add the
+user-facing features that were missing from the shipped app.
+
+### Features added
+
+#### Dark mode (light / dark / system)
+- `src/components/krishi/ThemeProvider.tsx` — `next-themes` wrapper, sets `dark` on `<html>`
+- `src/components/krishi/ThemeToggle.tsx` — sun/moon button in the app bar
+- `src/app/globals.css` — `.dark { ... }` token overrides; `.mat-card`, `.bottom-nav`
+  and `.chat-bubble-assistant` switched from hardcoded `background: white` to the
+  semantic `--card` / `--border` tokens
+- `dark:` variants added across `AnalyzerTab`, `ChatTab`, `HomeTab`, `LearnTab`,
+  `ProfileTab`, `ToolsTab` and `src/app/page.tsx`
+
+#### Service worker v4 — real offline support
+- `public/sw.js` rewritten: network-first navigations with a cached app-shell
+  fallback, cache-first `_next/static` (content-hashed and immutable), RSC
+  (`?_rsc=`) handling, API network-first with cache fallback, stale-while-revalidate
+  for images and everything else
+- `public/offline.html` — Bengali offline fallback screen
+
+#### Weather alerts
+- `src/lib/weather-alerts.ts` — Open-Meteo (keyless, free) current weather for all
+  64 districts, with a rule engine for heavy rain, thunderstorms, heat waves,
+  cold snaps and strong winds; 15-minute cooldown and 6-hour alert dedupe
+- `src/components/krishi/AlertSheet.tsx` — bottom sheet opened from the bell icon
+  in the app bar (previously a dead button), with optional OS notifications
+
+#### Privacy-respecting analytics
+- `src/lib/analytics.ts` — Plausible-compatible, opt-in, cookieless. No cookies,
+  no fingerprinting, no personal data. Honours Do Not Track and Global Privacy
+  Control. No-op when no endpoint is configured
+- Toggle in Profile → Settings; `pageview` and `tab_open` events fire automatically
+
+#### Privacy policy
+- `public/privacy.html` — required by Google Play and the Apple App Store
+
+### Cleanup (documented dead code removed)
+- Deleted `prisma/schema.prisma`, `src/lib/db.ts`, the `@prisma/client` and `prisma`
+  dependencies, and the `db:*` npm scripts — SQLite Prisma is not runtime-compatible
+  with the Cloudflare Workers deploy target, and no database is needed
+- Deleted `tailwind.config.ts` (dead under Tailwind v4 — tokens live in `globals.css`)
+- Deleted `src/components/ui/sonner.tsx` (unused; toasts use `@/hooks/use-toast`)
+
+### Docs updated
+- `.agent-ctx/KNOWN-ISSUES.md`, `.agent-ctx/PROJECT.md`, `.agent-ctx/ARCHITECTURE.md`,
+  `.agent-ctx/CONVENTIONS.md` (new theming + localStorage-state conventions)
+
+### Verification
+- `tsc --noEmit` — clean
+- `next build` — passes (6 routes)
+- `eslint` — no new errors (6 pre-existing warnings remain)
+- Playwright smoke test — dark mode toggles, alert sheet opens, zero console errors
+
+---
+
 ## 2026-06-10 — Initial Agent Cleanup & Prisma Migration
 
 **Agent:** Super Z (GLM-based AI assistant)

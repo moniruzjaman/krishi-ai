@@ -15,10 +15,13 @@ Krishi AI is a **mobile-first Progressive Web App (PWA)** that provides AI-power
 | Styling | Tailwind CSS | 4.x (v4 `@theme inline` in globals.css) |
 | UI Components | shadcn/ui | Latest |
 | State Management | Zustand + localStorage | 5.x |
+| Theming | next-themes (light/dark/system) | 0.4.x |
 | Animations | Framer Motion | 12.x |
 | AI - Primary | Google Gemini (2.5 Flash → 2.0 Flash cascade) | Free tier |
 | AI - Fallback | OpenRouter (Gemma-3, Llama-4, Mistral free models) | Free tier |
 | AI - Offline | Rule-based Bengali keyword matching | Zero cost |
+| Weather | Open-Meteo (keyless) | Free |
+| Analytics | Plausible-compatible, opt-in, cookieless | Free / self-host |
 | Package Manager | Bun | 1.x |
 | Deployment | Vercel (primary) + Cloudflare Pages (secondary) | — |
 | PWA | Service Worker + manifest.json | Standalone |
@@ -51,4 +54,8 @@ Even without any API keys, the app provides Bengali agricultural advice via Tier
 - **Free tier only**: All AI models used are on free tiers. No paid API calls.
 - **Offline-capable**: Rule-based tier works without any API. PWA caches critical assets.
 - **Mobile-first**: Designed for Android WebView and mobile browsers. Touch-optimized.
-- **No database required**: All data persisted in localStorage via Zustand. Prisma schema exists but is unused.
+- **No database required**: All data persisted in localStorage via Zustand. Prisma was removed
+  in Nov 2026 — SQLite Prisma is not runtime-compatible with the Cloudflare Workers
+  deployment target, and no database is needed for the current feature set.
+- **Privacy-first**: No cookies, no fingerprinting, no third-party tracking. Analytics are
+  opt-in and cookieless; Do Not Track and Global Privacy Control are respected.

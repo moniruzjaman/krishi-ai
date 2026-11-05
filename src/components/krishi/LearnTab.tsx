@@ -128,7 +128,7 @@ export default function LearnTab() {
             {currentQ.options.map((opt, idx) => {
               const isCorrect = idx === currentQ.correct
               const isSelected = idx === selected
-              let cls = 'mat-chip w-full justify-start bg-gray-100 text-foreground'
+              let cls = 'mat-chip w-full justify-start bg-gray-100 dark:bg-muted text-foreground'
               if (answered && isCorrect) cls = 'mat-chip w-full justify-start bg-krishi-green/10 text-krishi-green border border-krishi-green/30'
               if (answered && isSelected && !isCorrect) cls = 'mat-chip w-full justify-start bg-krishi-red/10 text-krishi-red border border-krishi-red/30'
               return (
