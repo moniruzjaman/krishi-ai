@@ -52,6 +52,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} antialiased bg-background text-foreground`}
       >
+        {/* esbuild/SWC `keepNames` shim.
+            next-themes renders its pre-paint theme script by stringifying a
+            minified function (`fn.toString()`). Minifiers annotate named
+            functions with `__name(fn, "fn")`, but the helper is not in scope
+            inside the inlined string, so the script throws before it can apply
+            the theme — causing a flash of the wrong theme on first paint.
+            Defining the helper globally first makes the inlined script work.
+            Keep this above <ThemeProvider>. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.__name=window.__name||function(f,n){Object.defineProperty(f,'name',{value:n,configurable:true});return f};",
+          }}
+        />
         <ThemeProvider>
           {children}
           <Toaster />
