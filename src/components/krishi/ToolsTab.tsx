@@ -4,18 +4,20 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Wrench, Heart, Layers, BookOpen, Shield, ChevronRight, ArrowLeft,
-  AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Bug
+  AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Bug, Wind, ExternalLink
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { useKrishiStore } from '@/lib/krishi-store'
+import { RESPIRATORY_TOOLS, platformBadgeClass } from '@/lib/respiratory-tools'
 
 const TOOLS = [
   { id: 'plant-health' as const, title: 'উদ্ভিদ স্বাস্থ্য', subtitle: 'গাছের স্বাস্থ্য পরীক্ষা করুন', icon: Heart, accent: 'bg-krishi-green/10 text-krishi-green', border: 'border-krishi-green/20' },
   { id: 'soil-audit' as const, title: 'মাটি অডিট', subtitle: 'মাটির গুণমান যাচাই করুন', icon: Layers, accent: 'bg-krishi-earth/10 text-krishi-earth', border: 'border-krishi-earth/20' },
   { id: 'crop-library' as const, title: 'ফসল পথিকা', subtitle: 'ফসলের তথ্য ও পরামর্শ', icon: BookOpen, accent: 'bg-krishi-amber/10 text-krishi-amber', border: 'border-krishi-amber/20' },
   { id: 'pesticide' as const, title: 'কীটনাশক গাইড', subtitle: 'নিরাপদ কীটনাশক ব্যবহার', icon: Shield, accent: 'bg-krishi-red/10 text-krishi-red', border: 'border-krishi-red/20' },
+  { id: 'respiratory' as const, title: 'শ্বাসযন্ত্র টুলস', subtitle: 'Respiratory live tools & repos', icon: Wind, accent: 'bg-krishi-sky/10 text-krishi-sky', border: 'border-krishi-sky/20' },
 ]
 
 const CROPS = ['ধান', 'গম', 'পাট', 'আলু', 'সরিষা', 'পেঁয়াজ']
@@ -267,6 +269,56 @@ export default function ToolsTab() {
                   <div className="bg-krishi-amber/5 rounded-lg p-2">
                     <p className="text-xs text-krishi-amber font-medium">নিরাপদ ব্যবহার:</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{p.safety}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Respiratory Tools Sub-page — live external tools (GitHub Pages / Vercel / Cloudflare / custom domain) */}
+        {toolsSubPage === 'respiratory' && (
+          <motion.div key="respiratory" {...slideIn} transition={{ duration: 0.25 }} className="space-y-4">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setToolsSubPage(null)} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-muted flex items-center justify-center ripple">
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </button>
+              <h2 className="text-lg font-bold text-foreground">শ্বাসযন্ত্র টুলস</h2>
+            </div>
+            <div className="mat-card elevation-1 border border-krishi-sky/20 bg-krishi-sky/5 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Wind className="w-4 h-4 text-krishi-sky" />
+                <h3 className="text-sm font-semibold text-krishi-sky">Live Respiratory Tools</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                নিচের টুলগুলো সবই ওপেন-সোর্স GitHub রিপোজিটরি — GitHub Pages / Vercel / Cloudflare / কাস্টম ডোমেইনে লাইভ হোস্টেড।
+                প্রতিটি টুল আলাদা মডিউল হিসেবে <code className="text-[10px]">src/lib/respiratory-tools.ts</code>-এ নিয়ন্ত্রিত।
+              </p>
+            </div>
+            <div className="space-y-2">
+              {RESPIRATORY_TOOLS.map((t, i) => (
+                <motion.div key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }} className="mat-card elevation-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-krishi-sky/10 flex items-center justify-center">
+                      <Wind className="w-4 h-4 text-krishi-sky" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-foreground truncate">{t.title}</h3>
+                      <p className="text-xs text-muted-foreground">{t.subtitle}</p>
+                    </div>
+                    <Badge className={`${platformBadgeClass[t.platform]} text-[10px] px-1.5 py-0 border-0 whitespace-nowrap`}>{t.platform}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{t.purpose}</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <a href={t.liveUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-krishi-sky ripple px-2 py-1 rounded-lg bg-krishi-sky/10">
+                      <ExternalLink className="w-3.5 h-3.5" /> Live URL
+                    </a>
+                    <a href={t.repoUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground ripple px-2 py-1 rounded-lg bg-gray-100 dark:bg-muted">
+                      <BookOpen className="w-3.5 h-3.5" /> {t.repo}
+                    </a>
                   </div>
                 </motion.div>
               ))}
